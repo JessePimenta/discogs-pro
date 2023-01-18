@@ -1,0 +1,110 @@
+<!DOCTYPE html>
+<html lang="en" dir="ltr">
+
+<head>
+  <meta charset="utf-8">
+  <title></title>
+</head>
+
+<body>
+
+  <h1>similar labels</h1>
+
+  <form id="label-search-form">
+    <label for="label-name-input">Label Name:</label>
+    <input type="text" id="label-name-input" name="label-name-input" placeholder="Enter label name here">
+    <button type="submit" id="submit-button">Submit</button>
+  </form>
+  <div id='labels-list'></div>
+  <script type="text/javascript" charset="utf-8">
+    window.onload = function() {
+      const token = "tTkFbTyarohzeMCFQWvMMUinJPgdkKWNdncnlqEg";
+
+      // Function that makes an API call to the Discogs API to search for a label
+      function searchLabels(labelName, token) {
+        return new Promise((resolve, reject) => {
+          const xhr = new XMLHttpRequest();
+          xhr.open("GET", `https://api.discogs.com/database/search?q=${labelName}&type=label&token=${token}`);
+          xhr.onload = () => {
+            if (xhr.status === 200) {
+              const data = JSON.parse(xhr.responseText);
+              if (data.results) {
+                console.log(data);
+                resolve(data.results);
+              } else {
+                resolve([]);
+              }
+            } else {
+              reject(Error(xhr.statusText));
+            }
+          };
+          xhr.onerror = () => {
+            reject(Error("Network Error"));
+          };
+          xhr.send();
+        });
+      }
+
+      //Function that compares the genres of releases of a label with the genres of releases of other labels
+      function findSimilarLabels(label, labels) {
+      // Check if label is defined, if not return an empty array
+      if (!label || !label.releases) {
+        return [];
+      }
+
+      let labelGenres = new Set();
+
+      label.releases.forEach(release => {
+        if (release.genres) {
+          release.genres.forEach(genre => {
+            labelGenres.add(genre);
+          });
+        }
+      });
+
+      let similarLabels = labels.filter(l => {
+        let commonGenres = 0;
+        if (l.releases) {
+          l.releases.forEach(genre => {
+            if (labelGenres.has(genre)) {
+              commonGenres++;
+            }
+          });
+        }
+        return commonGenres > 0;
+      });
+      return similarLabels;
+    }
+
+    function displayLabels(labels) {
+            // Get the labels-list element to display the similar labels
+            const labelsList = document.getElementById("labels-list");
+            // Clear the labels-list element
+            labelsList.innerHTML = "";
+            // Iterate over the similar labels and create a list item for each one
+            labels.forEach(label => {
+              const labelItem = document.createElement("li");
+              labelItem.innerHTML = label.title; // label.name should be used to display the name of the label
+              labelsList.appendChild(labelItem);
+            });
+          }
+      document.getElementById("label-search-form").addEventListener("submit", (event) => {
+        event.preventDefault();
+        // Get the label name from the input element
+        const labelNameInput = document.getElementById("label-name-input");
+        const labelName = labelNameInput.value;
+        searchLabels(labelName, token)
+          .then(results => {
+            console.log(results);
+            displayLabels(results);
+          })
+          .catch(error => {
+            console.log(error);
+          });
+      });
+
+    }
+  </script>
+</body>
+
+</html>
