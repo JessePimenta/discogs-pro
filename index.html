@@ -4,6 +4,8 @@
 <head>
   <meta charset="utf-8">
   <title></title>
+  <link rel="stylesheet" href="style.css">
+
 </head>
 
 <body>
@@ -77,6 +79,8 @@
     }
 
     function displayLabels(labels) {
+
+            const discogsURL = 'https://discogs.com'
             // Get the labels-list element to display the similar labels
             const labelsList = document.getElementById("labels-list");
             // Clear the labels-list element
@@ -84,8 +88,19 @@
             // Iterate over the similar labels and create a list item for each one
             labels.forEach(label => {
               const labelItem = document.createElement("li");
-              labelItem.innerHTML = label.title; // label.name should be used to display the name of the label
+
+              const labelLink = document.createElement("a");
+              labelLink.innerHTML = label.title;
+              labelLink.href = discogsURL+label.uri;
+              labelLink.target = "_blank";
+
+              const labelImg = document.createElement("img");
+              labelImg.src = label.cover_image;
+              // labelItem.innerHTML = label.title; // label.name should be used to display the name of the label
+              labelItem.appendChild(labelImg);
+              labelItem.appendChild(labelLink);
               labelsList.appendChild(labelItem);
+              // labelItem.innerHTML += label.title;
             });
           }
       document.getElementById("label-search-form").addEventListener("submit", (event) => {
